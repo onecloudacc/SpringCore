@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- remvoving DOCTYPE when the "qualifier" annotation was added , the equivalent xml namespace is mentioned below --><!-- <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN 2.0//EN" "http://www.springframework.org/dtd/spring-beans-2.0.dtd"> -->
+ <!-- copied the below from http://docs.spring.io/spring/docs/3.0.x/spring-framework-reference/html/xsd-config.html -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd"
+ xmlns:context="http://www.springframework.org/schema/context">
+
+	<bean id="triangleid" class="org.spring.demo.Triangle" init-method="myInit" destroy-method="myDestroy" >
+		<property name="type" value="EQUILATERAL" />
+		<constructor-arg type="int" value="50"></constructor-arg>
+		<constructor-arg type="int" value="100"></constructor-arg>
+		<!-- construction injection above -->
+		<property name="pointA">
+			<bean class="org.spring.demo.Point">
+				<property name="x" value="0" />
+				<property name="y" value="1" />
+			</bean>
+		</property>
+
+		<property name="pointB"> 
+             <bean class="org.spring.demo.Point">
+				<property name="x" value="2" />
+				<property name="y" value="3" />
+			</bean>
+		</property>
+<!-- Inner Bean above -->
+		<property name="pointC" ref="pointCRef" />
+		<property name="sides">
+		<list>
+		<ref bean="sideRef1"/>
+		<ref bean="sideRef2"/>
+		<ref bean="sideRef3"/>
+		</list>
+		</property>
+		<!--  Usage of collection : list -->
+	</bean>
+
+
+	<bean id="pointCRef" class="org.spring.demo.Point">
+	 <qualifier value ="circleRelated"/>
+		<property name="x" value="4" />
+		<property name="y" value="5" />
+		<!-- object injection above -->
+	</bean>
+	<bean id="sideRef1" class="org.spring.demo.Side">
+		<property name="side1" value="6" />
+		<property name="side2" value="7" />
+		<property name="side3" value="8" />
+</bean>
+<bean id="sideRef2" class="org.spring.demo.Side">
+		<property name="side1" value="9" />
+		<property name="side2" value="10" />
+		<property name="side3" value="11" />
+		</bean>
+		<bean id="sideRef3" class="org.spring.demo.Side">
+		<property name="side1" value="${side1}" /> <!-- loads the value from placehoilder.properties before the beanfactort is iniotialized, see beloe for PropertyPlaceholderConfigurer  -->
+		<property name="side2" value="13" />
+		<property name="side3" value="14" />
+	</bean>
+	
+<alias name="triangleid" alias="triangle-ref"/>
+
+<bean class ="org.spring.demo.DemoBeanPostProcessor"/>
+<bean class="org.spring.demo.DemoBeanFactoryPostProcessor"/> <!-- example below -->
+<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer" >
+<property name="locations" value="placeholder.properties"></property>
+</bean>
+
+<bean id="circle" class="org.spring.demo.Circle">
+<!-- <property name="center" ref="pointCRef"> </property>-->
+</bean>
+
+<!--  <bean class="org.springframework.beans.factory.annotation.RequiredAnnotationBeanPostProcessor"/>-->  <!-- copied path from http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/beans/factory/annotation/RequiredAnnotationBeanPostProcessor.html -->
+<!-- In order to load any annotation, no need to include the each and every annotation processor separately like above , just add the below tag : <context:annotation-config/>-->
+
+<!--  <bean id="semiCircle" class="org.spring.demo.SemiCircle"/>-->  <!--  to demo JSR-250 annotations and steoreotype annotations -->
+<!-- if there are more than one bean associated with the same class, then you can not use @component annotation  ex: pointA,pointB,pointC associated to point Class -->
+
+<bean id ="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource"> <!-- dont change anything here, even the bean id should be messageSource  -->
+<property name="basenames">
+<list>
+<value>messages</value>
+</list>
+</property>
+</bean>
+<context:annotation-config/>
+<context:component-scan base-package="org.spring.demo"></context:component-scan> <!-- this <context:component-scan> will scan for the @component annotation in this package  -->
+
+</beans>
+
